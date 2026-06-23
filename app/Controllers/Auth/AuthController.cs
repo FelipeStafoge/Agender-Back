@@ -72,6 +72,7 @@ public class AuthController : ControllerBase
             {
                 userName = user.Name,
                 userCode = user.UserCode,
+                account_id = user.Id,
                 email = user.Email,
                 action = ActionsRequest.Success.Login.UserLoggedIn
             }
@@ -238,6 +239,31 @@ public class AuthController : ControllerBase
         {
             data = listEvents
         });
+    }
+
+    [Authorize]
+    [HttpGet("getUserInfo")]
+    public async Task<IActionResult> GetUserInfo([FromQuery] string nameWithCode)
+    {
+        var parts = nameWithCode.Split('#');
+
+        if (parts.Length != 2)
+        {
+            return BadRequest("Formato inválido. Use Nome#Codigo");
+        }
+
+        var name = parts[0];
+        var code = parts[1];
+
+        var user = await _context.Users
+            .FirstOrDefaultAsync(u => u.Name == name && u.UserCode == code);
+
+        if (user == null)
+        {
+            return NotFound();
+        }
+
+        return Ok(new { data = user });
     }
 
 }

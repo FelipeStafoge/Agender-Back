@@ -35,7 +35,14 @@ namespace AgenderBackend.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("UserCode")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("Name", "UserCode")
+                        .IsUnique();
 
                     b.ToTable("Users");
                 });

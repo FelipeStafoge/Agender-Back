@@ -66,9 +66,15 @@ public class AuthController : ControllerBase
 
         return Ok(new
         {
-            action = ActionsRequest.Success.Login.UserLoggedIn,
             token,
-            refreshToken = refreshToken.Token
+            refreshToken = refreshToken.Token,
+            data = new
+            {
+                userName = user.Name,
+                userCode = user.UserCode,
+                email = user.Email,
+                action = ActionsRequest.Success.Login.UserLoggedIn
+            }
         });
     }
 
@@ -76,15 +82,6 @@ public class AuthController : ControllerBase
     [HttpPost("register")]
     public async Task<IActionResult> Register(RegisterRequest request)
     {
-        var user = new User
-        {
-            Id = Guid.NewGuid(),
-            Name = request.Name,
-            Email = request.Email,
-            Password = request.Password
-        };
-
-
 
         if (await _context.Users.AnyAsync(u => u.Email == request.Email))
         {
@@ -93,6 +90,26 @@ public class AuthController : ControllerBase
                 action = ActionsRequest.Error.Register.UserAlreadyExists
             });
         }
+
+        string userCode;
+
+        do
+        {
+            userCode = Random.Shared.Next(1000, 9999).ToString();
+        }
+        while (await _context.Users.AnyAsync(
+            u => u.Name == request.Name &&
+                 u.UserCode == userCode
+        ));
+
+        var user = new User
+        {
+            Id = Guid.NewGuid(),
+            Name = request.Name,
+            Email = request.Email,
+            Password = request.Password,
+            UserCode = userCode
+        };
 
 
         _context.Users.Add(user);

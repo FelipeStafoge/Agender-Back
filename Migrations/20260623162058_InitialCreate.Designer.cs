@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AgenderBackend.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260621200229_AddEventsTable")]
-    partial class AddEventsTable
+    [Migration("20260623162058_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -38,7 +38,14 @@ namespace AgenderBackend.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("UserCode")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("Name", "UserCode")
+                        .IsUnique();
 
                     b.ToTable("Users");
                 });
@@ -53,10 +60,6 @@ namespace AgenderBackend.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Date")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Email")
                         .IsRequired()
                         .HasColumnType("TEXT");
 

@@ -14,18 +14,25 @@ public class AppDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        var converter = new ValueConverter<List<string>, string>(
-            v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
-            v => JsonSerializer.Deserialize<List<string>>(v, (JsonSerializerOptions?)null) ?? new()
-        );
+        base.OnModelCreating(modelBuilder);
 
-        modelBuilder.Entity<Event>()
-            .Property(e => e.AccountsIds)
-            .HasConversion(converter);
+        modelBuilder.Entity<EventParticipant>()
+            .HasKey(ep => new { ep.EventId, ep.UserId });
+
+        modelBuilder.Entity<EventParticipant>()
+            .HasOne(ep => ep.Event)
+            .WithMany(e => e.Participants)
+            .HasForeignKey(ep => ep.EventId);
+
+        modelBuilder.Entity<EventParticipant>()
+            .HasOne(ep => ep.User)
+            .WithMany()
+            .HasForeignKey(ep => ep.UserId);
     }
 
     public DbSet<User> Users => Set<User>();
     public DbSet<RefreshToken> RefreshTokens { get; set; }
     public DbSet<Event> Events { get; set; }
 
+    public DbSet<EventParticipant> EventParticipants { get; set; }
 }

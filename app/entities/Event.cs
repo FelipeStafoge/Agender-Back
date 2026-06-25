@@ -1,3 +1,5 @@
+using AgenderBackend.Api.Models;
+
 public class Event
 {
 
@@ -5,6 +7,15 @@ public class Event
     public Guid AccountId { get; set; }
     public string Name { get; set; } = string.Empty;
     public string Date { get; set; } = string.Empty;
-    public List<string> AccountsIds { get; set; } = new();
 
+    public List<EventParticipant> Participants { get; set; } = [];
+}
+
+public class EventParticipant
+{
+    public Guid EventId { get; set; }
+    public Event Event { get; set; } = null!;
+
+    public Guid UserId { get; set; }
+    public User User { get; set; } = null!;
 }

@@ -7,6 +7,7 @@ public class Event
     public Guid AccountId { get; set; }
     public string Name { get; set; } = string.Empty;
     public string Date { get; set; } = string.Empty;
+    public string Color { get; set; } = "#653294";
 
     public List<EventParticipant> Participants { get; set; } = [];
 }

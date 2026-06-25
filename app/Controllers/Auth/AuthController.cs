@@ -200,6 +200,7 @@ public class AuthController : ControllerBase
             AccountId = creatorId,
             Name = request.Name,
             Date = request.Date,
+            Color = request.Color,
 
         };
 
@@ -264,6 +265,7 @@ public class AuthController : ControllerBase
                 Id = e.Id,
                 Name = e.Name,
                 Date = e.Date,
+                Color = e.Color,
                 Participants = e.Participants.Select(p => new ParticipantResponse
                 {
                     UserId = p.UserId,

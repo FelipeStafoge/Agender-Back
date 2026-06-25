@@ -184,35 +184,61 @@ public class AuthController : ControllerBase
     [HttpPost("createEvent")]
     public async Task<IActionResult> CreateEvent(CreateEventRequest request)
     {
-
         var accountId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-        Console.WriteLine($"AccountId: {accountId}");
+        if (!Guid.TryParse(accountId, out var creatorId))
+            return Unauthorized();
 
-        var user = await _context.Users.FindAsync(Guid.Parse(accountId!));
-
+        var user = await _context.Users.FindAsync(creatorId);
 
         if (user == null)
-        {
             return Unauthorized();
-        }
 
-        var userEvent = new Event
+        var newEvent = new Event
         {
-            AccountId = Guid.Parse(accountId!),
-            Date = request.DateTime,
             Id = Guid.NewGuid(),
-            Name = user.Name,
+            AccountId = creatorId,
+            Name = request.Name,
+            Date = request.Date,
+
         };
 
-        _context.Events.Add(userEvent);
+        _context.Events.Add(newEvent);
+
+
+        var participants = new List<EventParticipant>
+    {
+        new EventParticipant
+        {
+            EventId = newEvent.Id,
+            UserId = creatorId
+        }
+    };
+
+        foreach (var userId in request.Users_ids)
+        {
+
+            if (!Guid.TryParse(userId, out var parsedUserId))
+                continue;
+
+            participants.Add(new EventParticipant
+            {
+                EventId = newEvent.Id,
+                UserId = parsedUserId
+            });
+
+        }
+
+        _context.EventParticipants.AddRange(participants);
+
         await _context.SaveChangesAsync();
+
         return Ok(new
         {
-            message = "Criou o evento"
+            message = "Evento criado com participantes",
+            eventId = newEvent.Id
         });
     }
-
     [Authorize]
     [HttpGet("getListEvents")]
     public async Task<IActionResult> GetListEvents()
@@ -220,7 +246,6 @@ public class AuthController : ControllerBase
 
         var accountId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-        Console.WriteLine($"AccountId: {accountId}");
 
         var user = await _context.Users.FindAsync(Guid.Parse(accountId!));
 
@@ -231,9 +256,21 @@ public class AuthController : ControllerBase
         }
 
         var listEvents = await _context.Events
-            .Where(e => e.AccountId == user.Id)
+            .Where(e => e.Participants.Any(p => p.UserId == user.Id))
+            .Include(e => e.Participants)
+                .ThenInclude(p => p.User)
+            .Select(e => new EventResponse
+            {
+                Id = e.Id,
+                Name = e.Name,
+                Date = e.Date,
+                Participants = e.Participants.Select(p => new ParticipantResponse
+                {
+                    UserId = p.UserId,
+                    Name = p.User.Name
+                }).ToList()
+            })
             .ToListAsync();
-
 
         return Ok(new
         {
@@ -263,7 +300,7 @@ public class AuthController : ControllerBase
             return NotFound();
         }
 
-        return Ok(new { data = user });
+        return Ok(new { name = user.Name, email = user.Email, id = user.Id, userCode = user.UserCode });
     }
 
 }

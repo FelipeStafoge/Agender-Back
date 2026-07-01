@@ -1,29 +1,36 @@
 using AgenderBackend.Api.Models;
 
-public class Event
+public class Calendar
 {
     public Guid Id { get; set; }
     public Guid AccountId { get; set; }
     public string Name { get; set; } = string.Empty;
-    public string Date { get; set; } = string.Empty;
-    public string Color { get; set; } = "#653294";
-    public Guid? CalendarId { get; set; }
-    public Calendar? Calendar { get; set; }
+    public List<string> Date { get; set; } = [];
+    public string DefaultColor { get; set; } = "#653294";
+    public string OwnerId { get; set; } = string.Empty;
+    public bool IsPersonal { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
     public DateTime? DeletedAt { get; set; }
 
-    public List<EventParticipant> Participants { get; set; } = [];
+    public List<CalendarParticipant> CalendarParticipants { get; set; } = [];
 }
 
-public class EventParticipant
+public class CalendarParticipant
 {
-    public Guid EventId { get; set; }
-    public Event Event { get; set; } = null!;
+    public Guid Id { get; set; }
+
+    public Guid CalendarId { get; set; }
+    public Calendar Calendar { get; set; } = null!;
+
     public Guid UserId { get; set; }
     public User User { get; set; } = null!;
-    public string Role { get; set; } = "Member";
+
     public DateTime CreatedAt { get; set; }
+
     public DateTime? UpdatedAt { get; set; }
+
     public DateTime? DeletedAt { get; set; }
+
+    public string Role { get; set; } = "Member";
 }

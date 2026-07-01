@@ -53,6 +53,13 @@ public class AppDbContext : DbContext
             .WithMany()
             .HasForeignKey(e => e.CalendarId)
             .OnDelete(DeleteBehavior.SetNull);
+
+        // Soft delete filters
+        modelBuilder.Entity<User>().HasQueryFilter(u => u.DeletedAt == null);
+        modelBuilder.Entity<Calendar>().HasQueryFilter(c => c.DeletedAt == null);
+        modelBuilder.Entity<CalendarParticipant>().HasQueryFilter(cp => cp.DeletedAt == null);
+        modelBuilder.Entity<Event>().HasQueryFilter(e => e.DeletedAt == null);
+        modelBuilder.Entity<EventParticipant>().HasQueryFilter(ep => ep.DeletedAt == null);
     }
 
     public DbSet<User> Users => Set<User>();

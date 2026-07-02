@@ -245,6 +245,7 @@ public class AuthController : ControllerBase
             AccountId = creatorId,
             Name = request.Name,
             Date = request.Date,
+            Description = request.Description,
             Color = eventColor,
             CalendarId = calendarId,
             CreatedAt = now
@@ -319,6 +320,7 @@ public class AuthController : ControllerBase
                 Id = e.Id,
                 Name = e.Name,
                 Date = e.Date,
+                Description = e.Description,
                 Color = e.Color,
                 CalendarId = e.CalendarId,
                 CreatedAt = e.CreatedAt,
@@ -374,6 +376,7 @@ public class AuthController : ControllerBase
                 Id = e.Id,
                 Name = e.Name,
                 Date = e.Date,
+                Description = e.Description,
                 Color = e.Color,
                 CalendarId = e.CalendarId,
                 CreatedAt = e.CreatedAt,

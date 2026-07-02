@@ -2,6 +2,7 @@ public class CreateEventRequest
 {
     public string Date { get; set; } = string.Empty;
     public string Name { get; set; } = string.Empty;
+    public string? Description { get; set; }
     public string Color { get; set; } = string.Empty;
     public string? Calendar_id { get; set; }
     public List<string> Users_ids { get; set; } = new();
@@ -12,6 +13,7 @@ public class EventResponse
     public Guid Id { get; set; }
     public string Name { get; set; } = string.Empty;
     public string Date { get; set; } = string.Empty;
+    public string? Description { get; set; }
     public string Color { get; set; } = string.Empty;
     public Guid? CalendarId { get; set; }
     public DateTime CreatedAt { get; set; }

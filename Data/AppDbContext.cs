@@ -14,7 +14,7 @@ public class AppDbContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
 
-        // EventParticipant
+
         modelBuilder.Entity<EventParticipant>()
             .HasKey(ep => new { ep.EventId, ep.UserId });
 
@@ -28,7 +28,7 @@ public class AppDbContext : DbContext
             .WithMany()
             .HasForeignKey(ep => ep.UserId);
 
-        // CalendarParticipant
+
         modelBuilder.Entity<CalendarParticipant>()
             .HasKey(cp => cp.Id);
 
@@ -42,19 +42,16 @@ public class AppDbContext : DbContext
             .WithMany(u => u.CalendarParticipants)
             .HasForeignKey(cp => cp.UserId);
 
-        // Impede o mesmo usuário de participar duas vezes do mesmo calendário
         modelBuilder.Entity<CalendarParticipant>()
             .HasIndex(cp => new { cp.CalendarId, cp.UserId })
             .IsUnique();
 
-        // Event -> Calendar (optional)
         modelBuilder.Entity<Event>()
             .HasOne(e => e.Calendar)
             .WithMany()
             .HasForeignKey(e => e.CalendarId)
             .OnDelete(DeleteBehavior.SetNull);
 
-        // Soft delete filters
         modelBuilder.Entity<User>().HasQueryFilter(u => u.DeletedAt == null);
         modelBuilder.Entity<Calendar>().HasQueryFilter(c => c.DeletedAt == null);
         modelBuilder.Entity<CalendarParticipant>().HasQueryFilter(cp => cp.DeletedAt == null);

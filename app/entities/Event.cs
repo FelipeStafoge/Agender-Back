@@ -6,6 +6,7 @@ public class Event
     public Guid AccountId { get; set; }
     public string Name { get; set; } = string.Empty;
     public string Date { get; set; } = string.Empty;
+    public string? Description { get; set; }
     public string Color { get; set; } = "#653294";
     public Guid? CalendarId { get; set; }
     public Calendar? Calendar { get; set; }

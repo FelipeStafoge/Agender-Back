@@ -295,24 +295,39 @@ public class AuthController : ControllerBase
 
     [Authorize]
     [HttpGet("getListEvents")]
-    public async Task<IActionResult> GetListEvents()
+    public async Task<IActionResult> GetListEvents(
+        [FromQuery] string? startDate = null,
+        [FromQuery] string? endDate = null)
     {
-
         var accountId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-
 
         var user = await _context.Users.FindAsync(Guid.Parse(accountId!));
 
-
         if (user == null)
-        {
             return Unauthorized();
-        }
 
-        var listEvents = await _context.Events
+        var query = _context.Events
             .Where(e =>
                 (e.CalendarId == null && e.Participants.Any(p => p.UserId == user.Id)) ||
-                (e.CalendarId != null && e.Calendar!.CalendarParticipants.Any(p => p.UserId == user.Id)))
+                (e.CalendarId != null && e.Calendar!.CalendarParticipants.Any(p => p.UserId == user.Id)));
+
+        if (!string.IsNullOrEmpty(startDate))
+        {
+            var parts = startDate.Split('/');
+            var startComparable = parts[2] + parts[1] + parts[0];
+            query = query.Where(e =>
+                string.Compare(e.Date.Substring(6, 4) + e.Date.Substring(3, 2) + e.Date.Substring(0, 2), startComparable) >= 0);
+        }
+
+        if (!string.IsNullOrEmpty(endDate))
+        {
+            var parts = endDate.Split('/');
+            var endComparable = parts[2] + parts[1] + parts[0];
+            query = query.Where(e =>
+                string.Compare(e.Date.Substring(6, 4) + e.Date.Substring(3, 2) + e.Date.Substring(0, 2), endComparable) <= 0);
+        }
+
+        var listEvents = await query
             .Include(e => e.Participants)
                 .ThenInclude(p => p.User)
             .Select(e => new EventResponse
@@ -336,15 +351,15 @@ public class AuthController : ControllerBase
             })
             .ToListAsync();
 
-        return Ok(new
-        {
-            data = listEvents
-        });
+        return Ok(new { data = listEvents });
     }
 
     [Authorize]
     [HttpGet("getCalendarEvents")]
-    public async Task<IActionResult> GetCalendarEvents([FromQuery] string calendarId)
+    public async Task<IActionResult> GetCalendarEvents(
+        [FromQuery] string calendarId,
+        [FromQuery] string? startDate = null,
+        [FromQuery] string? endDate = null)
     {
         var accountId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
@@ -367,8 +382,26 @@ public class AuthController : ControllerBase
         if (!hasAccess)
             return Forbid();
 
-        var listEvents = await _context.Events
-            .Where(e => e.CalendarId == parsedCalendarId)
+        var query = _context.Events
+            .Where(e => e.CalendarId == parsedCalendarId);
+
+        if (!string.IsNullOrEmpty(startDate))
+        {
+            var parts = startDate.Split('/');
+            var startComparable = parts[2] + parts[1] + parts[0];
+            query = query.Where(e =>
+                string.Compare(e.Date.Substring(6, 4) + e.Date.Substring(3, 2) + e.Date.Substring(0, 2), startComparable) >= 0);
+        }
+
+        if (!string.IsNullOrEmpty(endDate))
+        {
+            var parts = endDate.Split('/');
+            var endComparable = parts[2] + parts[1] + parts[0];
+            query = query.Where(e =>
+                string.Compare(e.Date.Substring(6, 4) + e.Date.Substring(3, 2) + e.Date.Substring(0, 2), endComparable) <= 0);
+        }
+
+        var listEvents = await query
             .Include(e => e.Participants)
                 .ThenInclude(p => p.User)
             .Select(e => new EventResponse
@@ -392,10 +425,7 @@ public class AuthController : ControllerBase
             })
             .ToListAsync();
 
-        return Ok(new
-        {
-            data = listEvents
-        });
+        return Ok(new { data = listEvents });
     }
 
     [Authorize]

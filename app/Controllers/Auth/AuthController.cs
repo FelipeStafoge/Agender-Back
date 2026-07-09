@@ -159,7 +159,7 @@ public class AuthController : ControllerBase
         {
             action = ActionsRequest.Success.Register.UserRegistered,
             token,
-            refreshToken
+            refreshToken = refreshToken.Token
         });
 
 

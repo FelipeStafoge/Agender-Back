@@ -2,27 +2,32 @@
 
 ## Banco Utilizado
 
-- **SGBD**: SQLite
-- **Provider EF Core**: `Microsoft.EntityFrameworkCore.Sqlite` v10.0.9
-- **Arquivo**: `agender.db` (raiz do projeto)
-- **Connection String**: `Data Source=agender.db`
-- **Modelo**: Arquivo local, single-file database
+- **SGBD**: PostgreSQL
+- **Provider EF Core**: `Npgsql.EntityFrameworkCore.PostgreSQL` v10.0.2
+- **Connection String via**: `IConfiguration` + variaveis de ambiente
+- **Modelo**: Cliente-servidor, banco de dados externo
 
 ## Connection String
 
 ```json
 // appsettings.json
 "ConnectionStrings": {
-    "DefaultConnection": "Data Source=agender.db"
+    "DefaultConnection": "Host=localhost;Port=5432;Database=agender;Username=postgres;Password=postgres"
 }
 ```
+
+### Prioridade de Connection String
+
+1. Variavel de ambiente: `ConnectionStrings__DefaultConnection`
+2. `appsettings.Development.json`
+3. `appsettings.json`
 
 ## Registro no Program.cs
 
 ```csharp
 builder.Services.AddDbContext<AppDbContext>(options =>
 {
-    options.UseSqlite(
+    options.UseNpgsql(
         builder.Configuration.GetConnectionString("DefaultConnection")
     );
 });
@@ -107,16 +112,16 @@ protected override void OnModelCreating(ModelBuilder modelBuilder)
 
 ### Tabela: Users
 
-| Coluna | Tipo SQLite | Nullable | Descricao |
+| Coluna | Tipo PostgreSQL | Nullable | Descricao |
 |---|---|---|---|
-| `Id` | TEXT (Guid) | NOT NULL | Primary Key |
-| `Name` | TEXT | NOT NULL | Nome do usuario |
-| `Email` | TEXT | NOT NULL | Email |
-| `Password` | TEXT | NOT NULL | Senha (texto puro) |
-| `UserCode` | TEXT | NOT NULL | Codigo 4 digitos |
-| `CreatedAt` | TEXT (DateTime) | NOT NULL | Data de criacao |
-| `UpdatedAt` | TEXT (DateTime) | NULL | Data de atualizacao |
-| `DeletedAt` | TEXT (DateTime) | NULL | Soft delete |
+| `Id` | uuid | NOT NULL | Primary Key |
+| `Name` | text | NOT NULL | Nome do usuario |
+| `Email` | text | NOT NULL | Email |
+| `Password` | text | NOT NULL | Senha (texto puro) |
+| `UserCode` | text | NOT NULL | Codigo 4 digitos |
+| `CreatedAt` | timestamp with time zone | NOT NULL | Data de criacao |
+| `UpdatedAt` | timestamp with time zone | NULL | Data de atualizacao |
+| `DeletedAt` | timestamp with time zone | NULL | Soft delete |
 
 **Indices**:
 - `PK_Users`: `Id` (PRIMARY KEY)
@@ -124,33 +129,33 @@ protected override void OnModelCreating(ModelBuilder modelBuilder)
 
 ### Tabela: Calendar
 
-| Coluna | Tipo SQLite | Nullable | Descricao |
+| Coluna | Tipo PostgreSQL | Nullable | Descricao |
 |---|---|---|---|
-| `Id` | TEXT (Guid) | NOT NULL | Primary Key |
-| `AccountId` | TEXT (Guid) | NOT NULL | ID do criador |
-| `Name` | TEXT | NOT NULL | Nome |
-| `Date` | TEXT | NOT NULL | Lista de datas (primitive collection) |
-| `DefaultColor` | TEXT | NOT NULL | Cor padrao hex |
-| `OwnerId` | TEXT | NOT NULL | ID do dono (string) |
-| `IsPersonal` | INTEGER (bool) | NOT NULL | Calendario pessoal |
-| `CreatedAt` | TEXT (DateTime) | NOT NULL | Data de criacao |
-| `UpdatedAt` | TEXT (DateTime) | NULL | Data de atualizacao |
-| `DeletedAt` | TEXT (DateTime) | NULL | Soft delete |
+| `Id` | uuid | NOT NULL | Primary Key |
+| `AccountId` | uuid | NOT NULL | ID do criador |
+| `Name` | text | NOT NULL | Nome |
+| `Date` | text[] | NOT NULL | Lista de datas (array) |
+| `DefaultColor` | text | NOT NULL | Cor padrao hex |
+| `OwnerId` | text | NOT NULL | ID do dono (string) |
+| `IsPersonal` | boolean | NOT NULL | Calendario pessoal |
+| `CreatedAt` | timestamp with time zone | NOT NULL | Data de criacao |
+| `UpdatedAt` | timestamp with time zone | NULL | Data de atualizacao |
+| `DeletedAt` | timestamp with time zone | NULL | Soft delete |
 
 **Indices**:
 - `PK_Calendar`: `Id` (PRIMARY KEY)
 
 ### Tabela: CalendarParticipant
 
-| Coluna | Tipo SQLite | Nullable | Descricao |
+| Coluna | Tipo PostgreSQL | Nullable | Descricao |
 |---|---|---|---|
-| `Id` | TEXT (Guid) | NOT NULL | Primary Key |
-| `CalendarId` | TEXT (Guid) | NOT NULL | FK -> Calendar |
-| `UserId` | TEXT (Guid) | NOT NULL | FK -> Users |
-| `Role` | TEXT | NOT NULL | "Owner" / "Member" |
-| `CreatedAt` | TEXT (DateTime) | NOT NULL | Data de criacao |
-| `UpdatedAt` | TEXT (DateTime) | NULL | Data de atualizacao |
-| `DeletedAt` | TEXT (DateTime) | NULL | Soft delete |
+| `Id` | uuid | NOT NULL | Primary Key |
+| `CalendarId` | uuid | NOT NULL | FK -> Calendar |
+| `UserId` | uuid | NOT NULL | FK -> Users |
+| `Role` | text | NOT NULL | "Owner" / "Member" |
+| `CreatedAt` | timestamp with time zone | NOT NULL | Data de criacao |
+| `UpdatedAt` | timestamp with time zone | NULL | Data de atualizacao |
+| `DeletedAt` | timestamp with time zone | NULL | Soft delete |
 
 **Indices**:
 - `PK_CalendarParticipant`: `Id` (PRIMARY KEY)
@@ -163,18 +168,18 @@ protected override void OnModelCreating(ModelBuilder modelBuilder)
 
 ### Tabela: Events
 
-| Coluna | Tipo SQLite | Nullable | Descricao |
+| Coluna | Tipo PostgreSQL | Nullable | Descricao |
 |---|---|---|---|
-| `Id` | TEXT (Guid) | NOT NULL | Primary Key |
-| `AccountId` | TEXT (Guid) | NOT NULL | ID do criador |
-| `Name` | TEXT | NOT NULL | Nome do evento |
-| `Date` | TEXT | NOT NULL | Data `DD/MM/YYYY` |
-| `Description` | TEXT | NULL | Descricao |
-| `Color` | TEXT | NOT NULL | Cor hex |
-| `CalendarId` | TEXT (Guid) | NULL | FK -> Calendar |
-| `CreatedAt` | TEXT (DateTime) | NOT NULL | Data de criacao |
-| `UpdatedAt` | TEXT (DateTime) | NULL | Data de atualizacao |
-| `DeletedAt` | TEXT (DateTime) | NULL | Soft delete |
+| `Id` | uuid | NOT NULL | Primary Key |
+| `AccountId` | uuid | NOT NULL | ID do criador |
+| `Name` | text | NOT NULL | Nome do evento |
+| `Date` | text | NOT NULL | Data `DD/MM/YYYY` |
+| `Description` | text | NULL | Descricao |
+| `Color` | text | NOT NULL | Cor hex |
+| `CalendarId` | uuid | NULL | FK -> Calendar |
+| `CreatedAt` | timestamp with time zone | NOT NULL | Data de criacao |
+| `UpdatedAt` | timestamp with time zone | NULL | Data de atualizacao |
+| `DeletedAt` | timestamp with time zone | NULL | Soft delete |
 
 **Indices**:
 - `PK_Events`: `Id` (PRIMARY KEY)
@@ -185,14 +190,14 @@ protected override void OnModelCreating(ModelBuilder modelBuilder)
 
 ### Tabela: EventParticipants
 
-| Coluna | Tipo SQLite | Nullable | Descricao |
+| Coluna | Tipo PostgreSQL | Nullable | Descricao |
 |---|---|---|---|
-| `EventId` | TEXT (Guid) | NOT NULL | PK composta / FK -> Events |
-| `UserId` | TEXT (Guid) | NOT NULL | PK composta / FK -> Users |
-| `Role` | TEXT | NOT NULL | "Owner" / "Member" |
-| `CreatedAt` | TEXT (DateTime) | NOT NULL | Data de criacao |
-| `UpdatedAt` | TEXT (DateTime) | NULL | Data de atualizacao |
-| `DeletedAt` | TEXT (DateTime) | NULL | Soft delete |
+| `EventId` | uuid | NOT NULL | PK composta / FK -> Events |
+| `UserId` | uuid | NOT NULL | PK composta / FK -> Users |
+| `Role` | text | NOT NULL | "Owner" / "Member" |
+| `CreatedAt` | timestamp with time zone | NOT NULL | Data de criacao |
+| `UpdatedAt` | timestamp with time zone | NULL | Data de atualizacao |
+| `DeletedAt` | timestamp with time zone | NULL | Soft delete |
 
 **Indices**:
 - `PK_EventParticipants`: `(EventId, UserId)` (COMPOSITE PRIMARY KEY)
@@ -204,13 +209,13 @@ protected override void OnModelCreating(ModelBuilder modelBuilder)
 
 ### Tabela: RefreshTokens
 
-| Coluna | Tipo SQLite | Nullable | Descricao |
+| Coluna | Tipo PostgreSQL | Nullable | Descricao |
 |---|---|---|---|
-| `Id` | TEXT (Guid) | NOT NULL | Primary Key |
-| `Token` | TEXT | NOT NULL | Token Base64 |
-| `UserId` | TEXT (Guid) | NOT NULL | FK -> Users |
-| `ExpiresAt` | TEXT (DateTime) | NOT NULL | Data de expiracao |
-| `Revoked` | INTEGER (bool) | NOT NULL | Revogado |
+| `Id` | uuid | NOT NULL | Primary Key |
+| `Token` | text | NOT NULL | Token Base64 |
+| `UserId` | uuid | NOT NULL | FK -> Users |
+| `ExpiresAt` | timestamp with time zone | NOT NULL | Data de expiracao |
+| `Revoked` | boolean | NOT NULL | Revogado |
 
 **Indices**:
 - `PK_RefreshTokens`: `Id` (PRIMARY KEY)
@@ -238,18 +243,11 @@ protected override void OnModelCreating(ModelBuilder modelBuilder)
 
 ## Migrations
 
-### Historico de Migrations (8 migrations)
+### Historico de Migrations (1 migration)
 
 | # | Nome | Data | Descricao |
 |---|---|---|---|
-| 1 | `20260623162058_InitialCreate` | 23/06/2026 | Criacao inicial do banco |
-| 2 | `20260623192058_AddAccountsIds` | 23/06/2026 | Adiciona AccountId em entidades |
-| 3 | `20260624022316_AddEventParticipants` | 24/06/2026 | Adiciona tabela EventParticipants |
-| 4 | `20260625201608_AddEventColor` | 25/06/2026 | Adiciona campo Color em Event |
-| 5 | `20260626192639_AddCalendarDateList` | 26/06/2026 | Adiciona Date list e DefaultColor em Calendar |
-| 6 | `20260629035401_AddCalendarOwnerAndEventCalendarId` | 29/06/2026 | Adiciona OwnerId, IsPersonal e CalendarId |
-| 7 | `20260701010540_AddRolesAndTimestamps` | 01/07/2026 | Adiciona Role, CreatedAt, UpdatedAt, DeletedAt |
-| 8 | `20260702010745_AddEventDescription` | 02/07/2026 | Adiciona campo Description em Event |
+| 1 | `20260703000000_InitialCreate` | 03/07/2026 | Criacao inicial do banco para PostgreSQL |
 
 ### Comando para gerar migration
 
@@ -276,67 +274,67 @@ dotnet ef database update
 ```mermaid
 erDiagram
     Users {
-        TEXT Id PK "Guid"
-        TEXT Name
-        TEXT Email
-        TEXT Password
-        TEXT UserCode
-        TEXT CreatedAt
-        TEXT UpdatedAt
-        TEXT DeletedAt
+        uuid Id PK
+        text Name
+        text Email
+        text Password
+        text UserCode
+        timestamp_with_time_zone CreatedAt
+        timestamp_with_time_zone UpdatedAt
+        timestamp_with_time_zone DeletedAt
     }
 
     Calendar {
-        TEXT Id PK "Guid"
-        TEXT AccountId
-        TEXT Name
-        TEXT Date "List_string_"
-        TEXT DefaultColor
-        TEXT OwnerId
-        INTEGER IsPersonal
-        TEXT CreatedAt
-        TEXT UpdatedAt
-        TEXT DeletedAt
+        uuid Id PK
+        uuid AccountId
+        text Name
+        text_array Date
+        text DefaultColor
+        text OwnerId
+        boolean IsPersonal
+        timestamp_with_time_zone CreatedAt
+        timestamp_with_time_zone UpdatedAt
+        timestamp_with_time_zone DeletedAt
     }
 
     CalendarParticipant {
-        TEXT Id PK "Guid"
-        TEXT CalendarId FK
-        TEXT UserId FK
-        TEXT Role
-        TEXT CreatedAt
-        TEXT UpdatedAt
-        TEXT DeletedAt
+        uuid Id PK
+        uuid CalendarId FK
+        uuid UserId FK
+        text Role
+        timestamp_with_time_zone CreatedAt
+        timestamp_with_time_zone UpdatedAt
+        timestamp_with_time_zone DeletedAt
     }
 
     Events {
-        TEXT Id PK "Guid"
-        TEXT AccountId
-        TEXT Name
-        TEXT Date
-        TEXT Description
-        TEXT Color
-        TEXT CalendarId FK "nullable"
-        TEXT CreatedAt
-        TEXT UpdatedAt
-        TEXT DeletedAt
+        uuid Id PK
+        uuid AccountId
+        text Name
+        text Date
+        text Description
+        text Color
+        uuid CalendarId FK "nullable"
+        timestamp_with_time_zone CreatedAt
+        timestamp_with_time_zone UpdatedAt
+        timestamp_with_time_zone DeletedAt
     }
 
     EventParticipants {
-        TEXT EventId PK_FK
-        TEXT UserId PK_FK
-        TEXT Role
-        TEXT CreatedAt
-        TEXT UpdatedAt
-        TEXT DeletedAt
+        uuid EventId PK_FK
+        uuid UserId PK_FK
+        text Role
+        timestamp_with_time_zone CreatedAt
+        timestamp_with_time_zone UpdatedAt
+        timestamp_with_time_zone DeletedAt
     }
 
     RefreshTokens {
-        TEXT Id PK "Guid"
-        TEXT Token
-        TEXT UserId FK
-        TEXT ExpiresAt
-        INTEGER Revoked
+        uuid Id PK
+        text Token
+        uuid UserId FK
+        timestamp_with_time_zone ExpiresAt
+        boolean Revoked
     }
 
     Users ||--o{ CalendarParticipant : "UserId (Cascade)"

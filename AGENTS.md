@@ -30,7 +30,7 @@ HTTP Request
 [AppDbContext] -- acesso direto ao banco (sem Repository)
     |
     v
-[SQLite]
+[PostgreSQL]
 ```
 
 **Nao existem** camadas Repository nem Services de negocio separadas. Toda logica de negocio, validacao e queries ficam no Controller. A unica excecao e `JwtService` para geracao de tokens.
@@ -114,7 +114,7 @@ return Ok(new { message = "Criado com sucesso", id = entity.Id });
 
 ## Banco de Dados
 
-- **SQLite** via `Microsoft.EntityFrameworkCore.Sqlite`. Connection string: `Data Source=agender.db`.
+- **PostgreSQL** via `Npgsql.EntityFrameworkCore.PostgreSQL`. Connection string via `IConfiguration` e variaveis de ambiente (`ConnectionStrings__DefaultConnection`).
 
 ### DbContext
 

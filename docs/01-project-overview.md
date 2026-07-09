@@ -12,7 +12,7 @@ AgenderBackend e uma API REST para gerenciamento de calendarios e eventos compar
 | ASP.NET Core | 10.0 | Web API |
 | C# | 13 | Linguagem |
 | Entity Framework Core | 10.0.9 | ORM |
-| SQLite | Via EF Core | Banco de dados |
+| PostgreSQL | Via Npgsql EF Core | Banco de dados |
 | JWT Bearer | 10.0.9 | Autenticacao |
 | Swashbuckle | 10.2.1 | Documentacao Swagger/OpenAPI |
 | Microsoft.AspNetCore.OpenApi | 10.0.9 | Suporte OpenAPI |
@@ -26,13 +26,13 @@ AgenderBackend e uma API REST para gerenciamento de calendarios e eventos compar
 
 ## Banco de Dados
 
-- **SGBD**: SQLite (via `Microsoft.EntityFrameworkCore.Sqlite`)
+- **SGBD**: PostgreSQL (via `Npgsql.EntityFrameworkCore.PostgreSQL`)
 - **Arquivo**: `agender.db` (raiz do projeto)
 - **Migrations**: 8 migrations via EF Core Migrations
 
 ## ORM
 
-Entity Framework Core 10.0.9 com provedor SQLite.
+Entity Framework Core 10.0.9 com provedor PostgreSQL (Npgsql).
 
 ## Estrutura Geral
 
@@ -50,7 +50,7 @@ AgenderBackend/
 ├── Migrations/                # EF Core Migrations
 ├── Properties/
 │   └── launchSettings.json    # Perfis de execucao
-├── appsettings.json           # Config principal (JWT, SQLite)
+├── appsettings.json           # Config principal (JWT, PostgreSQL)
 └── appsettings.Development.json
 ```
 
@@ -72,7 +72,7 @@ O projeto segue uma arquitetura simplificada com apenas 2 camadas efetivas:
 | `Microsoft.AspNetCore.Authentication.JwtBearer` | 10.0.9 |
 | `Microsoft.AspNetCore.OpenApi` | 10.0.9 |
 | `Microsoft.EntityFrameworkCore.Design` | 10.0.9 |
-| `Microsoft.EntityFrameworkCore.Sqlite` | 10.0.9 |
+| `Npgsql.EntityFrameworkCore.PostgreSQL` | 10.0.2 |
 | `Swashbuckle.AspNetCore` | 10.2.1 |
 
 ## Organizacao do Projeto

@@ -9,9 +9,7 @@ AgenderBackend/
 ├── AgenderBackend.http                # Arquivo de testes HTTP
 ├── README.md
 ├── event-description-frontend.md      # Documentacao especifica do frontend
-├── agender.db                         # Banco SQLite (runtime)
-├── agender.db-shm                     # SQLite WAL shared memory
-├── agender.db-wal                     # SQLite WAL journal
+├── docker-compose.yml                 # Servico PostgreSQL local
 ├── appsettings.json                   # Configuracao principal
 ├── appsettings.Development.json       # Configuracao de desenvolvimento
 ├── Program.cs                         # Entry point (Minimal Hosting Model)

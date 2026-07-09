@@ -157,7 +157,7 @@ public class Calendar
 | `Id` | `Guid` | Sim (PK) | Identificador unico |
 | `AccountId` | `Guid` | Sim | ID do criador |
 | `Name` | `string` | Sim | Nome do calendario |
-| `Date` | `List<string>` | Sim | Lista de datas (armazenada como JSON/primitive collection no SQLite) |
+| `Date` | `List<string>` | Sim | Lista de datas (armazenada como `text[]` no PostgreSQL) |
 | `DefaultColor` | `string` | Sim | Cor padrao em hexadecimal (ex: `#653294`) |
 | `OwnerId` | `string` | Sim | ID do dono como string |
 | `IsPersonal` | `bool` | Sim | Indica se e calendario pessoal automatico |

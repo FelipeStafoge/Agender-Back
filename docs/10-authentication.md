@@ -246,7 +246,7 @@ Apenas dois claims sao incluidos no token JWT:
 sequenceDiagram
     participant Client as Cliente (Vue.js)
     participant API as AgenderBackend API
-    participant DB as SQLite
+    participant DB as banco de dados PostgreSQL
 
     Note over Client,DB: Registro
     Client->>API: POST /api/auth/register {name, email, password}

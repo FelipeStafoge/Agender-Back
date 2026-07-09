@@ -54,19 +54,15 @@ builder.Services
     });
 
 
-var connectionString = builder.Configuration["DATABASE_URL"];
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
-if (string.IsNullOrWhiteSpace(connectionString))
+if (string.IsNullOrEmpty(connectionString))
 {
-    throw new InvalidOperationException(
-        "A variável de ambiente DATABASE_URL não foi encontrada."
-    );
+    throw new InvalidOperationException("Connection string não encontrada.");
 }
 
 builder.Services.AddDbContext<AppDbContext>(options =>
-{
-    options.UseNpgsql(connectionString);
-});
+    options.UseNpgsql(connectionString));
 
 var app = builder.Build();
 

@@ -14,5 +14,6 @@ AGENTS.md
 
 *.db-shm
 *.db-wal
+*.db
 
 Dockerfile

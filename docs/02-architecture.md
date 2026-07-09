@@ -11,7 +11,7 @@ flowchart TD
     Controller["AuthController /api/auth"]
     JwtService["JwtService"]
     DbContext["AppDbContext (EF Core)"]
-    DB[(SQLite - agender.db)]
+    DB[(PostgreSQL)]
 
     Client --> Middleware1
     Middleware1 --> Middleware2
@@ -61,7 +61,7 @@ HTTP Request
 [Controller] -- AuthController processa a requisicao
     |
     v
-[AppDbContext / SQLite] -- acesso ao banco de dados
+[AppDbContext / PostgreSQL] -- acesso ao banco de dados
     |
     v
 [Controller] -- retorna IActionResult
@@ -78,7 +78,7 @@ HTTP Response
 - Configura **middleware pipeline**: Swagger, HTTPS, CORS, Auth, Controllers
 - Registra politicas de CORS (`VuePolicy`)
 - Configura autenticacao JWT com parametros de validacao
-- Configura EF Core com SQLite
+- Configura EF Core com PostgreSQL (Npgsql)
 
 ### Controller (AuthController)
 
@@ -113,9 +113,10 @@ Arquivo: `Data/AppDbContext.cs`
 - **6 DbSets**: `Users`, `RefreshTokens`, `Events`, `EventParticipants`, `Calendar`, `CalendarParticipant`
 - Aplica **Global Query Filters** para soft delete em todas as entidades (`DeletedAt == null`)
 
-### Database (SQLite)
+### Database (PostgreSQL)
 
-- Banco arquivo-local: `agender.db`
+- Banco cliente-servidor: PostgreSQL
+- Conexao via `Npgsql.EntityFrameworkCore.PostgreSQL`
 - Tabelas: `Users`, `RefreshTokens`, `Events`, `EventParticipants`, `Calendar`, `CalendarParticipant`
 - Sem procedures, sem views, sem triggers
 
@@ -134,7 +135,7 @@ builder.Services.AddControllers();
 builder.Services.AddScoped<JwtService>();
 builder.Services.AddDbContext<AppDbContext>(options =>
 {
-    options.UseSqlite(
+    options.UseNpgsql(
         builder.Configuration.GetConnectionString("DefaultConnection")
     );
 });

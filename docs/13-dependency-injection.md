@@ -29,10 +29,10 @@ builder.Services
     .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options => { ... });
 
-// 6. DbContext (SQLite)
+// 6. DbContext (PostgreSQL)
 builder.Services.AddDbContext<AppDbContext>(options =>
 {
-    options.UseSqlite(
+    options.UseNpgsql(
         builder.Configuration.GetConnectionString("DefaultConnection")
     );
 });

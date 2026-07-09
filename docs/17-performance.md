@@ -50,7 +50,7 @@ Para calendarios:
     .ThenInclude(p => p.User)
 ```
 
-Nao ha `AsSplitQuery()` para evitar explosao cartesiana (problema comum com multiplos Includes). Com SQLite, o impacto tende a ser menor que em bancos relacionais servidores.
+Nao ha `AsSplitQuery()` para evitar explosao cartesiana (problema comum com multiplos Includes). Com PostgreSQL, o impacto pode ser significativo com multiplos Includes.
 
 ---
 
@@ -134,7 +134,7 @@ Alem dos indices acima, todas as PKs sao indexadas automaticamente.
 
 ### Aspectos Positivos
 
-1. **SQLite local**: Banco de dados no mesmo servidor que a aplicacao, latencia minima.
+1. **PostgreSQL local**: Banco de dados no mesmo servidor ou container Docker, latencia baixa.
 2. **Projecao com Select**: Evita o problema de N+1 e carrega apenas dados necessarios.
 3. **Chaves estrangeiras indexadas**: `UserId` em tabelas de juncao tem indices.
 4. **Indices unicos**: Garantem integridade com performance.

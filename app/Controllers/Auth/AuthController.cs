@@ -467,6 +467,13 @@ public class AuthController : ControllerBase
         if (user == null)
             return Unauthorized();
 
+        var ownedCalendarsCount = await _context.Calendar
+            .Where(c => c.OwnerId == creatorId.ToString() && !c.IsPersonal)
+            .CountAsync();
+
+        if (ownedCalendarsCount >= 3)
+            return BadRequest(new { message = "Limite de 3 calendarios atingido" });
+
         var now = DateTime.UtcNow;
 
         var newCalendar = new Calendar

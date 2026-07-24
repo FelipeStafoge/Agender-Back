@@ -682,5 +682,49 @@ public class AuthController : ControllerBase
         return Ok(new { message = "Evento deletado" });
     }
 
+    [Authorize]
+    [HttpDelete("removeParticipantInEvent/{eventId}/{memberId}")]
+    public async Task<IActionResult> RemoveParticipantInEvent(string eventId, string memberId)
+    {
+        var accountId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+        if (!Guid.TryParse(accountId, out var userId))
+            return Unauthorized();
+
+        if (!Guid.TryParse(eventId, out var parsedEventId))
+            return BadRequest(new { message = "eventId inválido" });
+
+        if (!Guid.TryParse(memberId, out var parsedMemberId))
+            return BadRequest(new { message = "memberId inválido" });
+
+        var eventEntity = await _context.Events.FindAsync(parsedEventId);
+
+        if (eventEntity == null)
+            return NotFound(new { message = "Evento não encontrado" });
+
+        if (eventEntity.AccountId != userId)
+        {
+            if (eventEntity.CalendarId == null)
+                return Forbid();
+
+            var calendar = await _context.Calendar.FindAsync(eventEntity.CalendarId);
+
+            if (calendar == null || calendar.OwnerId != accountId)
+                return Forbid();
+        }
+
+        var participant = await _context.EventParticipants
+            .FirstOrDefaultAsync(ep => ep.EventId == parsedEventId && ep.UserId == parsedMemberId);
+
+        if (participant == null)
+            return NotFound(new { message = "Participante não encontrado" });
+
+        participant.DeletedAt = DateTime.UtcNow;
+
+        await _context.SaveChangesAsync();
+
+        return Ok(new { message = "Participante removido do evento" });
+    }
+
 }
 

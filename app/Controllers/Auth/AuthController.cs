@@ -238,57 +238,67 @@ public class AuthController : ControllerBase
         }
 
         var now = DateTime.UtcNow;
+        var eventIds = new List<Guid>();
 
-        var newEvent = new Event
+        var distinctDates = request.Date
+            .Where(d => !string.IsNullOrWhiteSpace(d))
+            .Distinct()
+            .ToList();
+
+        if (distinctDates.Count == 0)
+            return BadRequest(new { message = "Pelo menos uma data e obrigatoria" });
+
+        foreach (var date in distinctDates)
         {
-            Id = Guid.NewGuid(),
-            AccountId = creatorId,
-            Name = request.Name,
-            Date = request.Date,
-            Description = request.Description,
-            Color = eventColor,
-            CalendarId = calendarId,
-            CreatedAt = now
-        };
-
-        _context.Events.Add(newEvent);
-
-
-        var participants = new List<EventParticipant>
-    {
-        new EventParticipant
-        {
-            EventId = newEvent.Id,
-            UserId = creatorId,
-            Role = "Owner",
-            CreatedAt = now
-        }
-    };
-
-        foreach (var userId in request.Users_ids)
-        {
-
-            if (!Guid.TryParse(userId, out var parsedUserId))
-                continue;
-
-            participants.Add(new EventParticipant
+            var newEvent = new Event
             {
-                EventId = newEvent.Id,
-                UserId = parsedUserId,
-                Role = "Member",
+                Id = Guid.NewGuid(),
+                AccountId = creatorId,
+                Name = request.Name,
+                Date = date,
+                Description = request.Description,
+                Color = eventColor,
+                CalendarId = calendarId,
                 CreatedAt = now
-            });
+            };
 
+            _context.Events.Add(newEvent);
+
+            var participants = new List<EventParticipant>
+            {
+                new EventParticipant
+                {
+                    EventId = newEvent.Id,
+                    UserId = creatorId,
+                    Role = "Owner",
+                    CreatedAt = now
+                }
+            };
+
+            foreach (var userId in request.Users_ids)
+            {
+                if (!Guid.TryParse(userId, out var parsedUserId))
+                    continue;
+
+                participants.Add(new EventParticipant
+                {
+                    EventId = newEvent.Id,
+                    UserId = parsedUserId,
+                    Role = "Member",
+                    CreatedAt = now
+                });
+            }
+
+            _context.EventParticipants.AddRange(participants);
+            eventIds.Add(newEvent.Id);
         }
-
-        _context.EventParticipants.AddRange(participants);
 
         await _context.SaveChangesAsync();
 
         return Ok(new
         {
-            message = "Evento criado com participantes",
-            eventId = newEvent.Id
+            message = "Evento(s) criado(s) com participantes",
+            eventIds
         });
     }
 

@@ -26,6 +26,24 @@ public class AuthController : ControllerBase
             RandomNumberGenerator.GetBytes(64)
         );
     }
+
+    private static string? NormalizeDate(string input)
+    {
+        if (string.IsNullOrWhiteSpace(input))
+            return null;
+
+        var cleaned = input;
+
+        var parenIndex = cleaned.LastIndexOf('(');
+        if (parenIndex >= 0)
+            cleaned = cleaned.Substring(0, parenIndex).Trim();
+
+        if (DateTime.TryParse(cleaned, CultureInfo.InvariantCulture, DateTimeStyles.None, out var date)
+            || DateTime.TryParse(cleaned, out date))
+            return date.ToString("dd/MM/yyyy");
+
+        return null;
+    }
     public AuthController(
         JwtService jwtService,
         AppDbContext context)
@@ -739,23 +757,6 @@ public class AuthController : ControllerBase
         return Ok(new { message = "Participante removido do evento" });
     }
 
-    private static string? NormalizeDate(string input)
-    {
-        if (string.IsNullOrWhiteSpace(input))
-            return null;
-
-        var cleaned = input;
-
-        var parenIndex = cleaned.LastIndexOf('(');
-        if (parenIndex >= 0)
-            cleaned = cleaned.Substring(0, parenIndex).Trim();
-
-        if (DateTime.TryParse(cleaned, CultureInfo.InvariantCulture, DateTimeStyles.None, out var date)
-            || DateTime.TryParse(cleaned, out date))
-            return date.ToString("dd/MM/yyyy");
-
-        return null;
-    }
 
 }
 

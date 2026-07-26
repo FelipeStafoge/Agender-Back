@@ -6,6 +6,7 @@ using AgenderBackend.Data;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using Microsoft.AspNetCore.Authorization;
+using System.Globalization;
 
 
 namespace AgenderBackend.Api.Controllers;
@@ -241,7 +242,9 @@ public class AuthController : ControllerBase
         var eventIds = new List<Guid>();
 
         var distinctDates = request.Dates
-            .Where(d => !string.IsNullOrWhiteSpace(d))
+            .Select(NormalizeDate)
+            .Where(d => d != null)
+            .Cast<string>()
             .Distinct()
             .ToList();
 
@@ -734,6 +737,17 @@ public class AuthController : ControllerBase
         await _context.SaveChangesAsync();
 
         return Ok(new { message = "Participante removido do evento" });
+    }
+
+    private static string? NormalizeDate(string input)
+    {
+        if (string.IsNullOrWhiteSpace(input))
+            return null;
+
+        if (DateTime.TryParse(input, CultureInfo.GetCultureInfo("pt-BR"), DateTimeStyles.None, out var date))
+            return date.ToString("dd/MM/yyyy");
+
+        return null;
     }
 
 }

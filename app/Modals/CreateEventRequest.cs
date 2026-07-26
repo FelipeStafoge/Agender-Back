@@ -1,6 +1,6 @@
 public class CreateEventRequest
 {
-    public string Date { get; set; } = string.Empty;
+    public List<string> Date { get; set; } = [];
     public string Name { get; set; } = string.Empty;
     public string? Description { get; set; }
     public string Color { get; set; } = string.Empty;

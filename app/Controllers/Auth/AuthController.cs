@@ -240,7 +240,7 @@ public class AuthController : ControllerBase
         var now = DateTime.UtcNow;
         var eventIds = new List<Guid>();
 
-        var distinctDates = request.Date
+        var distinctDates = request.Dates
             .Where(d => !string.IsNullOrWhiteSpace(d))
             .Distinct()
             .ToList();

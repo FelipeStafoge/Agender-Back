@@ -744,8 +744,14 @@ public class AuthController : ControllerBase
         if (string.IsNullOrWhiteSpace(input))
             return null;
 
-        if (DateTime.TryParse(input, out var date)
-            || DateTime.TryParse(input, CultureInfo.InvariantCulture, DateTimeStyles.None, out date))
+        var cleaned = input;
+
+        var parenIndex = cleaned.LastIndexOf('(');
+        if (parenIndex >= 0)
+            cleaned = cleaned.Substring(0, parenIndex).Trim();
+
+        if (DateTime.TryParse(cleaned, CultureInfo.InvariantCulture, DateTimeStyles.None, out var date)
+            || DateTime.TryParse(cleaned, out date))
             return date.ToString("dd/MM/yyyy");
 
         return null;

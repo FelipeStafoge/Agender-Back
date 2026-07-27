@@ -337,10 +337,19 @@ public class AuthController : ControllerBase
         if (user == null)
             return Unauthorized();
 
+        var leftEventIds = await _context.EventParticipants
+            .IgnoreQueryFilters()
+            .Where(ep => ep.UserId == user.Id && ep.DeletedAt != null)
+            .Select(ep => ep.EventId)
+            .ToListAsync();
+
         var query = _context.Events
             .Where(e =>
                 (e.CalendarId == null && e.Participants.Any(p => p.UserId == user.Id)) ||
                 (e.CalendarId != null && e.Calendar!.CalendarParticipants.Any(p => p.UserId == user.Id)));
+
+        if (leftEventIds.Count > 0)
+            query = query.Where(e => !leftEventIds.Contains(e.Id));
 
         if (!string.IsNullOrEmpty(startDate))
         {
@@ -413,8 +422,17 @@ public class AuthController : ControllerBase
         if (!hasAccess)
             return Forbid();
 
+        var leftEventIds = await _context.EventParticipants
+            .IgnoreQueryFilters()
+            .Where(ep => ep.UserId == userId && ep.DeletedAt != null)
+            .Select(ep => ep.EventId)
+            .ToListAsync();
+
         var query = _context.Events
             .Where(e => e.CalendarId == parsedCalendarId);
+
+        if (leftEventIds.Count > 0)
+            query = query.Where(e => !leftEventIds.Contains(e.Id));
 
         if (!string.IsNullOrEmpty(startDate))
         {
@@ -673,6 +691,7 @@ public class AuthController : ControllerBase
             return BadRequest(new { message = "eventId inválido" });
 
         var participant = await _context.EventParticipants
+            .IgnoreQueryFilters()
             .FirstOrDefaultAsync(ep => ep.EventId == parsedEventId && ep.UserId == userId);
 
         if (participant != null)
@@ -693,7 +712,21 @@ public class AuthController : ControllerBase
                 .AnyAsync(cp => cp.CalendarId == eventEntity.CalendarId && cp.UserId == userId);
 
             if (isCalendarMember)
-                return BadRequest(new { message = "Você não pode sair de um evento individual em um calendário. Saia do calendário." });
+            {
+                var newParticipant = new EventParticipant
+                {
+                    EventId = parsedEventId,
+                    UserId = userId,
+                    Role = "Member",
+                    CreatedAt = DateTime.UtcNow,
+                    DeletedAt = DateTime.UtcNow
+                };
+
+                _context.EventParticipants.Add(newParticipant);
+                await _context.SaveChangesAsync();
+
+                return Ok(new { message = "Você saiu do evento" });
+            }
         }
 
         return NotFound(new { message = "Participação não encontrada" });

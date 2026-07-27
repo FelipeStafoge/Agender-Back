@@ -675,14 +675,28 @@ public class AuthController : ControllerBase
         var participant = await _context.EventParticipants
             .FirstOrDefaultAsync(ep => ep.EventId == parsedEventId && ep.UserId == userId);
 
-        if (participant == null)
-            return NotFound(new { message = "Participação não encontrada" });
+        if (participant != null)
+        {
+            participant.DeletedAt = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
+            return Ok(new { message = "Você saiu do evento" });
+        }
 
-        participant.DeletedAt = DateTime.UtcNow;
+        var eventEntity = await _context.Events.FindAsync(parsedEventId);
 
-        await _context.SaveChangesAsync();
+        if (eventEntity == null)
+            return NotFound(new { message = "Evento não encontrado" });
 
-        return Ok(new { message = "Você saiu do evento" });
+        if (eventEntity.CalendarId != null)
+        {
+            var isCalendarMember = await _context.CalendarParticipant
+                .AnyAsync(cp => cp.CalendarId == eventEntity.CalendarId && cp.UserId == userId);
+
+            if (isCalendarMember)
+                return BadRequest(new { message = "Você não pode sair de um evento individual em um calendário. Saia do calendário." });
+        }
+
+        return NotFound(new { message = "Participação não encontrada" });
     }
 
     [Authorize]
